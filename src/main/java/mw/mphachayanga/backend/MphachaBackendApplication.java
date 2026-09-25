@@ -1,13 +1,11 @@
-package mw.mphachayanga.backend;
+package mw.mphachayanga;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MphachaBackendApplication {
-
-	public static void main(String[] args) {
-		SpringApplication.run(MphachaBackendApplication.class, args);
-	}
-
+public class MphachaYangaApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(MphachaYangaApplication.class, args);
+    }
 }
