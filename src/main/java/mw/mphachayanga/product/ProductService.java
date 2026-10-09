@@ -1,6 +1,7 @@
 package mw.mphachayanga.product;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mw.mphachayanga.common.exception.ResourceNotFoundException;
 import mw.mphachayanga.common.util.FileUploadUtil;
 import mw.mphachayanga.product.dto.*;
@@ -11,6 +12,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProductService {
 
     private final ProductRepository repo;
@@ -41,9 +43,7 @@ public class ProductService {
                 .category(req.category())
                 .isActive(req.isActive() == null || req.isActive())
                 .build();
-        if (image != null && !image.isEmpty()) {
-            p.setImageUrl(uploadUtil.uploadImage(image));
-        }
+        p.setImageUrl(safeUpload(image));
         return ProductResponse.from(repo.save(p));
     }
 
@@ -56,8 +56,10 @@ public class ProductService {
         p.setStockQuantity(req.stockQuantity());
         p.setCategory(req.category());
         if (req.isActive() != null) p.setIsActive(req.isActive());
-        if (image != null && !image.isEmpty()) {
-            p.setImageUrl(uploadUtil.uploadImage(image));
+
+        String newImageUrl = safeUpload(image);
+        if (newImageUrl != null) {
+            p.setImageUrl(newImageUrl);
         }
         return ProductResponse.from(repo.save(p));
     }
@@ -65,5 +67,23 @@ public class ProductService {
     public void delete(Long id) {
         if (!repo.existsById(id)) throw new ResourceNotFoundException("Product not found");
         repo.deleteById(id);
+    }
+
+    /**
+     * Attempts to upload the image. If Cloudinary isn't configured or the upload
+     * fails, logs the error and returns null so the product still saves without
+     * an image. This keeps product creation resilient when Cloudinary env vars
+     * are missing (e.g. during early testing).
+     */
+    private String safeUpload(MultipartFile image) {
+        if (image == null || image.isEmpty()) {
+            return null;
+        }
+        try {
+            return uploadUtil.uploadImage(image);
+        } catch (Exception e) {
+            log.warn("Image upload failed, saving product without image: {}", e.getMessage());
+            return null;
+        }
     }
 }
