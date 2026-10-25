@@ -14,6 +14,12 @@ public class PaymentController {
 
     private final PaymentService paymentService;
     private final OrderRepository orderRepo;
+    @PostMapping("/initiate")
+public Map<String, String> initiate(@RequestBody Map<String, Long> body) {
+    Order order = orderRepo.findById(body.get("orderId")).orElseThrow();
+    String url = paymentService.initiatePayment(order);
+    return Map.of("checkoutUrl", url);
+}
 
     @PostMapping("/webhook")
     public void handleWebhook(@RequestBody Map<String, Object> payload) {
