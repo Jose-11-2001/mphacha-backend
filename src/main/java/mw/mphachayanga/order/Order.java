@@ -16,6 +16,8 @@ public class Order {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+        @Column(name = "payment_reference", length = 255)
+    private String paymentReference;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "customer_id")
