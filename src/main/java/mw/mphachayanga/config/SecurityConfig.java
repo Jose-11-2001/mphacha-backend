@@ -28,28 +28,28 @@ public class SecurityConfig {
             .cors(c -> c.configurationSource(corsConfigurationSource))
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // 1. Public API endpoints
+                // Public API endpoints
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/products/**").permitAll()
                 .requestMatchers("/api/comments/**").permitAll()
                 .requestMatchers("/api/delivery-fees/public/**").permitAll()
 
-                // 2. PayChangu Webhook (Must be public so PayChangu can reach it)
+                // PayChangu Webhook
                 .requestMatchers("/api/payments/webhook").permitAll()
 
-                // 3. Swagger / OpenAPI docs
+                // ⬇️ THE CRITICAL FIX: Allow ALL Swagger paths
                 .requestMatchers(
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
-                    "/swagger-ui.html"
+                    "/swagger-ui.html",
+                    "/webjars/**" 
                 ).permitAll()
 
-                // 4. Protected endpoints
+                // Protected endpoints
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/orders/**").hasRole("CUSTOMER")
-                .requestMatchers("/api/payments/**").hasRole("CUSTOMER") // Except webhook
+                .requestMatchers("/api/payments/**").hasRole("CUSTOMER")
 
-                // 5. Anything else needs a valid JWT
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
